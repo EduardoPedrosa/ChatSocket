@@ -19,7 +19,7 @@ class Servidor():
         self.socket_tcp.listen(5)
         self.socket_tcp.setblocking(False)
 
-        print ('Servidor ONLINE')
+        print ("\33[32m \t\t\t\tSERVIDOR ONLINE \33[0m")
 
         aceitar = threading.Thread(target=self.aceitarConexao)
         enviar = threading.Thread(target=self.enviarMensagens)
@@ -45,7 +45,7 @@ class Servidor():
                 nome = conn.recv(4096).decode()
                 self.registroClientes[addr] = ""
                 if nome in self.registroClientes.values():
-                    conn.send("\r\33[31m\33[1m Username já existente! Escreva EXIT para sair e tente conectar de novo\n\33[0m".encode())
+                    conn.send("\r\33[31m\33[1m Nome de usuario já existente! Escreva EXIT para sair e tente conectar de novo\n\33[0m".encode())
                     del self.registroClientes[addr]
                     conn.close()
                 else:
@@ -54,7 +54,7 @@ class Servidor():
                     self.listaConectados.append(conn)
                     print("Cliente (%s, %s) conectado" % addr, " [",self.registroClientes[addr],"]")
                     conn.send("\33[32m\r\33[1m Bem vindo ao chat. Digite 'EXIT' a qualquer momento para sair\n\33[0m".encode())
-                    self.enviarBroadcast(("\33[32m\33[1m\r "+nome+" juntou-se ao chat \n\33[0m").encode(), conn)
+                    self.enviarBroadcast(("\33[32m\33[1m\r "+nome+" juntou-se ao chat \n\33[0m"), conn)            
             except:
                 pass
 
@@ -64,21 +64,40 @@ class Servidor():
             try:
                 if c != cliente:
                     envio = self.registroClientes[(i,p)]
-                    mensagemEnviada = envio + ": " + mensagem.decode()
-                    c.send(mensagemEnviada.encode())
+                    c.send(mensagem.encode())
             except:
                 self.listaConectados.remove(c)
-                del self.registroClientes[addr] 
+                del self.registroClientes[(i,p)] 
 
     def enviarMensagens(self):
         while True:
-            if len(self.listaConectados) > 0:
+            if(len(self.listaConectados) > 0):
                 for c in self.listaConectados:
                     try:
-                        dados = c.recv(1024)
-                        if dados:
-                            self.enviarBroadcast(dados, c)
+                        data1 = c.recv(4096)
+                        data=data1.decode()
+                        i,p = c.getpeername()
+                        if data == "EXIT":
+                            msg="\r\33[1m"+"\33[31m "+self.registroClientes[(i,p)]+" saiu da conversa \33[0m\n"
+                            enviarBroadcast(c,msg)
+                            print ("Cliente (%s, %s) esta offline" % (i,p)," [",self.registroClientes[(i,p)],"]")
+                            del self.registroClientes[(i,p)]
+                            self.listaConectados.remove(c)
+                            c.close()
+                            continue
+
+                        else:
+                            msg="\r\33[1m"+"\33[35m "+self.registroClientes[(i,p)]+": "+"\33[0m"+data+"\n"
+                            enviarBroadcast(c,msg)
+                
+                    #abrupt user exit
                     except:
-                        pass
+                        (i,p)=c.getpeername()
+                        self.enviarBroadcast("\r\33[31m \33[1m"+self.registroClientes[(i,p)]+" saiu da conversa inesperadamente\33[0m\n",c)
+                        print ("Cliente (%s, %s) esta offline (erro)" % (i,p)," [",self.registroClientes[(i,p)],"]\n")
+                        del self.registroClientes[(i,p)]
+                        self.listaConectados.remove(c)
+                        c.close()
+                        continue
 
 s = Servidor()
