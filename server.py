@@ -17,6 +17,7 @@ class Servidor():
         self.socket_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_tcp.bind((str(host), int(port)))
         self.socket_tcp.listen(5)
+        self.socket_tcp.settimeout(2)
         self.socket_tcp.setblocking(False)
 
         print ("\33[32m \t\t\t\tSERVIDOR ONLINE \33[0m")
@@ -49,14 +50,14 @@ class Servidor():
                         continue
                     else:
                         self.registroClientes[addr] = nome
-                        conn.setblocking(False)
                         self.listaConectados.append(conn)
                         print("Cliente (%s, %s) conectado" % addr, " [",self.registroClientes[addr],"]")
                         conn.send(("\33[32m\r\33[1m Bem vindo ao chat. Digite 'EXIT' a qualquer momento para sair\n\33[0m").encode())
                         self.enviarBroadcast("\33[32m\33[1m\r "+nome+" juntou-se ao chat \n\33[0m", conn)            
-                else:
+                else: #mensagem vindo de algum usuario
                     try:
-                        data = str(c.recv(1024).decode())
+                        data1 = str(c.recv(1024).decode())
+                        data = data1[:data1.index("\n")]
                         i,p = c.getpeername()
                         if (data == "EXIT"):
                             msg="\r\33[1m"+"\33[31m "+self.registroClientes[(i,p)]+" saiu da conversa \33[0m\n"
@@ -67,7 +68,7 @@ class Servidor():
                             c.close()
                             continue
                         else:
-                            msg="\r\33[1m"+"\33[35m "+self.registroClientes[(i,p)]+": "+"\33[0m"+data+" \n"
+                            msg="\r\33[1m"+"\33[35m "+self.registroClientes[(i,p)]+": "+"\33[0m"+data+"  \n"
                             self.enviarBroadcast(msg,c)
                     #abrupt user exit
                     except:
@@ -83,11 +84,11 @@ class Servidor():
         i, p = cliente.getpeername()
         for c in self.listaConectados:
             if((c != cliente) and (c != self.socket_tcp)):
-                try:   
+                try:
                     c.send(mensagem.encode())
                 except:
-                    self.listaConectados.remove(c)
                     ip, port = c.getpeername()
+                    self.listaConectados.remove(c)
                     del self.registroClientes[(ip,port)]
                     c.close()
                     

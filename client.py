@@ -31,10 +31,10 @@ class Cliente():
         while True:
             self.display()
             msg = sys.stdin.readline()
-            msg = msg.strip()
-            self.socket_tcp.send(msg.encode())
-            if(msg == "EXIT"):
-                sys.exit()
+            if(msg != "\n"):
+                self.socket_tcp.send(msg.encode())
+                if(msg == "EXIT"):
+                    sys.exit()
 	
     def display(self) :
         you="\33[33m\33[1m"+" Voce: "+"\33[0m"
