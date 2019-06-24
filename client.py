@@ -31,6 +31,7 @@ class Cliente():
         while True:
             self.display()
             msg = sys.stdin.readline()
+            msg = msg.strip()
             self.socket_tcp.send(msg.encode())
 	
     def display(self) :
