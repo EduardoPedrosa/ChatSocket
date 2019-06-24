@@ -8,7 +8,7 @@
 import socket
 import threading
 import sys
-
+import select
 
 class Servidor():
     def __init__(self, host="localhost", port=4000):
@@ -71,8 +71,8 @@ class Servidor():
 
     def enviarMensagens(self):
         while True:
-            if(len(self.listaConectados) > 0):
-                for c in self.listaConectados:
+            rList,wList,error_sockets = select.select(self.listaConectados,[],[])
+            for c in rList:
                     try:
                         data = str(c.recv(1024).decode())
                         if(data):
