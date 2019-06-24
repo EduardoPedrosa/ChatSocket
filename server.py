@@ -27,12 +27,12 @@ class Servidor():
         aceitarOuEnviar.start()
 
         while True:
-                msg = input('=>')
-                if msg == 'EXIT':
-                    self.socket_tcp.close()
-                    sys.exit()
-                else:
-                    pass
+            msg = input('=>')
+            if msg == 'EXIT':
+                self.socket_tcp.close()
+                sys.exit()
+            else:
+                pass
 	
     def aceitarOuEnviar(self):
         while True:
@@ -58,19 +58,17 @@ class Servidor():
                     try:
                         data = str(c.recv(1024).decode())
                         i,p = c.getpeername()
-                        if data == "EXIT":
+                        if (data == "EXIT"):
                             msg="\r\33[1m"+"\33[31m "+self.registroClientes[(i,p)]+" saiu da conversa \33[0m\n"
-                            enviarBroadcast(msg,c)
+                            self.enviarBroadcast(msg,c)
                             print ("Cliente (%s, %s) esta offline" % (i,p)," [",self.registroClientes[(i,p)],"]")
                             del self.registroClientes[(i,p)]
                             self.listaConectados.remove(c)
                             c.close()
                             continue
-
                         else:
-                            msg="\r\33[1m"+"\33[35m "+self.registroClientes[(i,p)]+": "+"\33[0m"+data+"\n"
-                            enviarBroadcast(msg,c)
-                        
+                            msg="\r\33[1m"+"\33[35m "+self.registroClientes[(i,p)]+": "+"\33[0m"+data+" \n"
+                            self.enviarBroadcast(msg,c)
                     #abrupt user exit
                     except:
                         (i,p)=c.getpeername()
