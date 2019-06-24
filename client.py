@@ -41,9 +41,9 @@ class Cliente():
     def receberMensagens(self):
         while True:
             data = self.socket_tcp.recv(1024)
-            sys.stdout.write(str(data.decode()))
-            self.display()
-
+            if(data):
+                sys.stdout.write(str(data.decode()))
+                self.display()
 ipHost = input("IP DO SERVIDOR: ")
 nome = input("Nome de usuario: ")
 os.system('clear')

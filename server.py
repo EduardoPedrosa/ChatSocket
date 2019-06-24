@@ -42,7 +42,7 @@ class Servidor():
         while True:
             try:
                 conn, addr = self.socket_tcp.accept()
-                nome = conn.recv(4096).decode()
+                nome = str(conn.recv(1024).decode())
                 self.registroClientes[addr] = ""
                 if nome in self.registroClientes.values():
                     conn.send("\r\33[31m\33[1m Nome de usuario já existente! Escreva EXIT para sair e tente conectar de novo\n\33[0m".encode())
@@ -63,33 +63,33 @@ class Servidor():
         for c in self.listaConectados:
             try:
                 if c != cliente:
-                    envio = self.registroClientes[(i,p)]
                     c.send(mensagem.encode())
             except:
                 self.listaConectados.remove(c)
-                del self.registroClientes[(i,p)] 
+                ip, port = c.getpeername()
+                del self.registroClientes[(ip,port)]
 
     def enviarMensagens(self):
         while True:
             if(len(self.listaConectados) > 0):
                 for c in self.listaConectados:
                     try:
-                        data1 = c.recv(4096)
-                        data=data1.decode()
-                        i,p = c.getpeername()
-                        if data == "EXIT":
-                            msg="\r\33[1m"+"\33[31m "+self.registroClientes[(i,p)]+" saiu da conversa \33[0m\n"
-                            enviarBroadcast(c,msg)
-                            print ("Cliente (%s, %s) esta offline" % (i,p)," [",self.registroClientes[(i,p)],"]")
-                            del self.registroClientes[(i,p)]
-                            self.listaConectados.remove(c)
-                            c.close()
-                            continue
+                        data = str(c.recv(1024).decode())
+                        if(data):
+                            i,p = c.getpeername()
+                            if data == "EXIT":
+                                msg="\r\33[1m"+"\33[31m "+self.registroClientes[(i,p)]+" saiu da conversa \33[0m\n"
+                                enviarBroadcast(c,msg)
+                                print ("Cliente (%s, %s) esta offline" % (i,p)," [",self.registroClientes[(i,p)],"]")
+                                del self.registroClientes[(i,p)]
+                                self.listaConectados.remove(c)
+                                c.close()
+                                continue
 
-                        else:
-                            msg="\r\33[1m"+"\33[35m "+self.registroClientes[(i,p)]+": "+"\33[0m"+data+"\n"
-                            enviarBroadcast(c,msg)
-                
+                            else:
+                                msg="\r\33[1m"+"\33[35m "+self.registroClientes[(i,p)]+": "+"\33[0m"+data+"\n"
+                                enviarBroadcast(c,msg)
+                        
                     #abrupt user exit
                     except:
                         (i,p)=c.getpeername()
