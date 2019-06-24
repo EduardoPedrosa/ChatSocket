@@ -10,7 +10,6 @@ import socket
 import threading
 import sys
 import os
-import select
 
 class Cliente():
     def __init__(self, host, port, nome):
@@ -33,7 +32,7 @@ class Cliente():
             msg = sys.stdin.readline()
             if(msg != "\n"):
                 self.socket_tcp.send(msg.encode())
-                if(msg == "EXIT"):
+                if(msg.strip() == "EXIT"):
                     sys.exit()
 	
     def display(self) :

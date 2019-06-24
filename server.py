@@ -91,6 +91,5 @@ class Servidor():
                     self.listaConectados.remove(c)
                     del self.registroClientes[(ip,port)]
                     c.close()
-                    
 
 s = Servidor()
