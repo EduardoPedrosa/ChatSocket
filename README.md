@@ -1,5 +1,6 @@
 # ChatSocket
 > Eduardo Miranda Pedrosa Filho <br> 
+> Igor Henrique Torati Ruy <br> 
 > João Pedro Fachini Alvarenga <br>
 #### Trabalho da matéria de Redes de Computadores. 
 
